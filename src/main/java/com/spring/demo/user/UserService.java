@@ -17,26 +17,28 @@ public class UserService {
     private final UserRepository userRepository;
 
     @Transactional
-    public UserResponse.UsersDTO getUsers(UserRequest.JoinDTO joinDTO){
+    public UserResponse.UsersDTO getUsers(UserRequest.JoinDTO joinDTO) {
 
-        Optional<User> userOP= userRepository.findByUserName(joinDTO.getName());
-        if(userOP.isPresent()) {
+        Optional<User> userOP = userRepository.findByUserName(joinDTO.getName());
+        if (userOP.isPresent()) {
             throw new ExceptionApi400("이미 존재하는 유저입니다.");
         }
         User userPS = userRepository.save(joinDTO.toEntity());
 
-        List<Integer> users= userRepository.findUsersId();
+        List<Integer> users = userRepository.findUsersId();
+        // 이렇게 DTO 안에 뭐 넣지말고 스트림으로 처리 하는게 낫다.
+        // return users.stream().map(id -> new UserResponse.UserIdDTO(id)).toList();
         return new UserResponse.UsersDTO(users);
     }
 
-    public UserResponse.UserDTO getUser(int id){
+    public UserResponse.UserDTO getUser(int id) {
         User user = userRepository.findByUserId(id)
                 .orElseThrow(() -> new ExceptionApi404("유저가 존재하지 않습니다."));
         return new UserResponse.UserDTO(user);
     }
 
     @Transactional
-    public UserResponse.UserDTO updateUser(int id, UserRequest.UserDTO userDTO){
+    public UserResponse.UserDTO updateUser(int id, UserRequest.UserDTO userDTO) {
         User user = userRepository.findByUserId(id)
                 .orElseThrow(() -> new ExceptionApi404("유저가 존재하지 않습니다."));
 
