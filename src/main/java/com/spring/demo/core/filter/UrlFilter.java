@@ -1,6 +1,5 @@
 package com.spring.demo.core.filter;
 
-import com.spring.demo.core.error.ExceptionApi400;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -13,13 +12,20 @@ public class UrlFilter implements Filter {
     private static final Pattern INVALID_URL_PATTERN = Pattern.compile("[^\\w?&=:/]|(?<!:)/{2,}");
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
         String requestURI = httpRequest.getRequestURI();
         // 쿼리의 !! 도 검사하기 위해 추가함
         String queryString = httpRequest.getQueryString();
+
+        // /h2-console 경로는 필터 적용에서 제외
+        if (requestURI.startsWith("/h2-console")) {
+            chain.doFilter(request, response);
+            return;
+        }
 
         // URI 검사
         if (INVALID_URL_PATTERN.matcher(requestURI).find()) {
